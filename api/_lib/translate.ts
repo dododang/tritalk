@@ -1,6 +1,6 @@
 import { LANGS, LANG_LABEL, type Lang } from './types.js';
 
-const GEMINI_MODEL = process.env.GEMINI_MODEL ?? 'gemini-3.6-flash';
+const GEMINI_MODEL = process.env.GEMINI_MODEL ?? 'gemini-3.8-flash';
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 
 /** source 텍스트를 나머지 두 언어로 번역한다. */

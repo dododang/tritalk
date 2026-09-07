@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import PasswordGate from './components/PasswordGate'
 import ConversationPage from './pages/ConversationPage'
 import LibraryPage from './pages/LibraryPage'
 import TranslatePage from './pages/TranslatePage'
@@ -15,6 +16,7 @@ function App() {
   const [tab, setTab] = useState<Tab>('conversation')
 
   return (
+    <PasswordGate>
     <div className="flex h-dvh flex-col bg-[#0a0a0f] text-gray-100">
       <main className="min-h-0 flex-1 overflow-y-auto">
         {tab === 'translate' && <TranslatePage />}
@@ -40,6 +42,7 @@ function App() {
         </div>
       </nav>
     </div>
+    </PasswordGate>
   )
 }
 

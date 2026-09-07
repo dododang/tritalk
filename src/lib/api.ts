@@ -1,4 +1,5 @@
 import type { Lang, TranslateRequest, TranslateResponse } from '../../api/_lib/types'
+import { getPassword, invalidatePassword } from './auth'
 
 export type { Lang }
 
@@ -10,9 +11,17 @@ export async function requestTranslation(
 
   const res = await fetch('/api/translate', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'x-app-password': getPassword() ?? '',
+    },
     body: JSON.stringify(body),
   })
+
+  if (res.status === 401) {
+    invalidatePassword()
+    throw new Error('비밀번호가 올바르지 않습니다')
+  }
 
   if (!res.ok) {
     const data = (await res.json().catch(() => null)) as { error?: string } | null

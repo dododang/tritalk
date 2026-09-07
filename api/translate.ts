@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { isAuthorized } from './_lib/auth';
 import { translate } from './_lib/translate';
 import { LANGS, type Lang, type TranslateRequest, type TranslateResponse } from './_lib/types';
 
@@ -7,7 +8,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
-  // TODO(Phase 1 섹션 3): 공유 비밀번호 검증 추가
+  if (!isAuthorized(req)) {
+    return res.status(401).json({ error: 'unauthorized' });
+  }
 
   const { text, source } = (req.body ?? {}) as Partial<TranslateRequest>;
 

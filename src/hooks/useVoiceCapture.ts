@@ -1,4 +1,4 @@
-import { MicVAD } from '@ricky0123/vad-web'
+import type { MicVAD } from '@ricky0123/vad-web'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 export type CaptureState =
@@ -38,6 +38,8 @@ export function useVoiceCapture(opts: {
     if (vadRef.current) return
     setState({ kind: 'starting' })
     try {
+      // VAD+onnxruntime(~400KB)은 첫 시작 때만 동적 로드 (메인 번들 경량 유지)
+      const { MicVAD } = await import('@ricky0123/vad-web')
       const vad = await MicVAD.new({
         model: 'v5',
         baseAssetPath: '/vad/',

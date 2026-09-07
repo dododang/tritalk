@@ -6,8 +6,9 @@ export type { Lang }
 export async function requestTranslation(
   text: string,
   source: Lang,
+  quality: boolean,
 ): Promise<TranslateResponse['translations']> {
-  const body: TranslateRequest = { text, source }
+  const body: TranslateRequest = { text, source, quality }
 
   const res = await fetch('/api/translate', {
     method: 'POST',

@@ -1,19 +1,19 @@
 import { LANGS, LANG_LABEL, type Lang } from './types.js';
 
-/** 앞에서부터 순서대로 시도, 혼잡(503)·미지원 모델은 다음으로 폴백.
- *  flash-lite가 기본: 품질은 Flash보다 약간 낮지만 응답이 일정하게 빠름(~1.5초).
- *  품질 우선으로 되돌리려면 Vercel env에 GEMINI_MODEL=gemini-3.8-flash 설정. */
-const MODEL_CHAIN = [
-  process.env.GEMINI_MODEL,
-  'gemini-flash-lite-latest',
-  'gemini-3.8-flash',
-  'gemini-3.7-flash',
-].filter((m): m is string => Boolean(m));
+/** 앞에서부터 순서대로 시도, 혼잡(503)·한도(429)·미지원(404) 시 다음으로 폴백.
+ *  기본(빠름): flash-lite 우선 (~1.5초 일정). 고급(quality): Flash 우선 (품질↑, 지연 편차 있음). */
+function modelChain(quality: boolean): string[] {
+  const chain = quality
+    ? ['gemini-3.8-flash', 'gemini-3.7-flash', 'gemini-flash-lite-latest']
+    : ['gemini-flash-lite-latest', 'gemini-3.8-flash', 'gemini-3.7-flash'];
+  return [process.env.GEMINI_MODEL, ...chain].filter((m): m is string => Boolean(m));
+}
 
 /** source 텍스트를 나머지 두 언어로 번역한다. */
 export async function translate(
   text: string,
   source: Lang,
+  quality = false,
 ): Promise<Partial<Record<Lang, string>>> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) throw new Error('GEMINI_API_KEY is not set');
@@ -42,7 +42,7 @@ export async function translate(
   });
 
   let lastError = '';
-  for (const model of MODEL_CHAIN) {
+  for (const model of modelChain(quality)) {
     const res = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
       {

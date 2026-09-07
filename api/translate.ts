@@ -12,7 +12,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(401).json({ error: 'unauthorized' });
   }
 
-  const { text, source } = (req.body ?? {}) as Partial<TranslateRequest>;
+  const { text, source, quality } = (req.body ?? {}) as Partial<TranslateRequest>;
 
   if (typeof text !== 'string' || text.trim().length === 0) {
     return res.status(400).json({ error: 'text is required' });
@@ -25,7 +25,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const translations = await translate(text.trim(), source as Lang);
+    const translations = await translate(text.trim(), source as Lang, quality === true);
     const body: TranslateResponse = { translations };
     return res.status(200).json(body);
   } catch (e) {

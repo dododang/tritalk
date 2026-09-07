@@ -9,12 +9,22 @@ const LANG_NATIVE: Record<Lang, string> = {
 
 const ALL_LANGS: Lang[] = ['ko', 'en', 'ja']
 
+const QUALITY_KEY = 'tritalk.quality'
+
 export default function TranslatePage() {
   const [source, setSource] = useState<Lang>('ko')
   const [text, setText] = useState('')
   const [results, setResults] = useState<Partial<Record<Lang, string>>>({})
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [quality, setQuality] = useState(() => localStorage.getItem(QUALITY_KEY) === '1')
+
+  function toggleQuality() {
+    setQuality((prev) => {
+      localStorage.setItem(QUALITY_KEY, prev ? '0' : '1')
+      return !prev
+    })
+  }
 
   const targets = ALL_LANGS.filter((l) => l !== source)
   const canSubmit = text.trim().length > 0 && !loading
@@ -25,7 +35,7 @@ export default function TranslatePage() {
     setError(null)
     setResults({})
     try {
-      setResults(await requestTranslation(text.trim(), source))
+      setResults(await requestTranslation(text.trim(), source, quality))
     } catch (e) {
       setError(e instanceof Error ? e.message : '번역에 실패했습니다')
     } finally {
@@ -41,6 +51,26 @@ export default function TranslatePage() {
 
   return (
     <div className="mx-auto flex h-full max-w-lg flex-col gap-4 p-4">
+      {/* 고급 모드 토글 */}
+      <div className="flex items-center justify-end gap-2">
+        <span className="text-xs text-gray-500">고급</span>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={quality}
+          onClick={toggleQuality}
+          className={`relative h-6 w-11 rounded-full transition-colors ${
+            quality ? 'bg-violet-600' : 'bg-white/10'
+          }`}
+        >
+          <span
+            className={`absolute top-0.5 h-5 w-5 rounded-full bg-white transition-all ${
+              quality ? 'left-[22px]' : 'left-0.5'
+            }`}
+          />
+        </button>
+      </div>
+
       {/* 원문 언어 선택 */}
       <div className="flex gap-2">
         {ALL_LANGS.map((lang) => (

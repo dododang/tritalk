@@ -12,6 +12,8 @@ export const LANG_LABEL: Record<Lang, string> = {
 export interface TranslateRequest {
   text: string;
   source: Lang;
+  /** true면 고급(Flash) 모델 우선, false/생략이면 빠른 flash-lite 우선 */
+  quality?: boolean;
 }
 
 /** POST /api/translate 응답 본문 */

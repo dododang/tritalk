@@ -28,6 +28,9 @@ export async function interpret(
     '2. Detect the language: ko (Korean), en (English), or ja (Japanese). Give a confidence between 0 and 1.',
     '3. Provide the text in all three languages: for the detected language, repeat the transcription; for the other two, translate it.',
     'Preserve the tone, politeness level, and nuance. Output natural, everyday phrasing a native speaker would use.',
+    'CRITICAL: Transcribe ONLY what is actually audible. Never add greetings, sentence openings, or endings that were not spoken.',
+    'The audio may be a fragment cut mid-sentence — if so, transcribe the fragment as-is without completing it into a full sentence.',
+    'If a word is unclear, transcribe your best guess of the actual sound. Do not invent plausible-sounding replacements.',
     'If the audio contains no discernible speech, return an empty transcription with confidence 0.',
   ].join('\n');
 

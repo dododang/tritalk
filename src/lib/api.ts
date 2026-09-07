@@ -41,10 +41,14 @@ export async function requestTranslation(
 }
 
 /** 발화 WAV → 전사 + 언어감지 + 2개 언어 번역 */
-export async function requestInterpretation(wav: Blob): Promise<InterpretResponse> {
+export async function requestInterpretation(
+  wav: Blob,
+  quality: boolean,
+): Promise<InterpretResponse> {
   const body: InterpretRequest = {
     audio: await blobToBase64(wav),
     mimeType: 'audio/wav',
+    quality,
   }
 
   const res = await fetch('/api/interpret', {

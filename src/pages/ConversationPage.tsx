@@ -27,7 +27,9 @@ export default function ConversationPage() {
     // 비동기로 던지고 즉시 다음 발화 청취로 복귀 (seq로 버블 순서 보장)
     void (async () => {
       try {
-        const { asr, translations } = await requestInterpretation(encodeWav(audio))
+        // 번역 탭의 "고급" 토글 설정 공유 — on이면 전사 정확도 높은 Flash 우선
+        const quality = localStorage.getItem('tritalk.quality') === '1'
+        const { asr, translations } = await requestInterpretation(encodeWav(audio), quality)
         setItems((prev) =>
           asr.text.trim().length === 0
             ? prev.filter((it) => it.seq !== seq) // 말소리 없음 → 버블 제거

@@ -21,3 +21,28 @@ export interface TranslateResponse {
   /** source를 제외한 나머지 두 언어의 번역 결과 */
   translations: Partial<Record<Lang, string>>;
 }
+
+/** ASR(전사) 결과 — 명세 §5 */
+export interface ASRResult {
+  lang: Lang;
+  text: string;
+  /** 언어 감지 신뢰도 0~1 */
+  confidence: number;
+}
+
+/** POST /api/interpret 요청 본문 */
+export interface InterpretRequest {
+  /** base64 인코딩된 오디오 (data: 접두사 없이) */
+  audio: string;
+  /** 기본 'audio/wav' */
+  mimeType?: string;
+  /** true면 고급(Flash) 모델 우선 */
+  quality?: boolean;
+}
+
+/** POST /api/interpret 응답 본문 */
+export interface InterpretResponse {
+  asr: ASRResult;
+  /** 감지된 언어를 제외한 나머지 두 언어의 번역 */
+  translations: Partial<Record<Lang, string>>;
+}

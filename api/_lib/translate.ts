@@ -2,7 +2,7 @@ import { LANGS, LANG_LABEL, type Lang } from './types.js';
 
 /** 앞에서부터 순서대로 시도, 혼잡(503)·한도(429)·미지원(404) 시 다음으로 폴백.
  *  기본(빠름): flash-lite 우선 (~1.5초 일정). 고급(quality): Flash 우선 (품질↑, 지연 편차 있음). */
-function modelChain(quality: boolean): string[] {
+export function modelChain(quality: boolean): string[] {
   const chain = quality
     ? ['gemini-3.8-flash', 'gemini-3.7-flash', 'gemini-flash-lite-latest']
     : ['gemini-flash-lite-latest', 'gemini-3.8-flash', 'gemini-3.7-flash'];

@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { isAuthorized } from './_lib/auth';
-import { translate } from './_lib/translate';
-import { LANGS, type Lang, type TranslateRequest, type TranslateResponse } from './_lib/types';
+import { isAuthorized } from './_lib/auth.ts';
+import { translate } from './_lib/translate.ts';
+import { LANGS, type Lang, type TranslateRequest, type TranslateResponse } from './_lib/types.ts';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {

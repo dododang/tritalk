@@ -1,4 +1,4 @@
-import { LANGS, LANG_LABEL, type Lang } from './types';
+import { LANGS, LANG_LABEL, type Lang } from './types.ts';
 
 const GEMINI_MODEL = process.env.GEMINI_MODEL ?? 'gemini-3.6-flash';
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;

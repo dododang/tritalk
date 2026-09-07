@@ -1,11 +1,13 @@
 import { LANGS, LANG_LABEL, type Lang } from './types.js';
 
-/** 앞에서부터 순서대로 시도, 혼잡(503)·미지원 모델은 다음으로 폴백 */
+/** 앞에서부터 순서대로 시도, 혼잡(503)·미지원 모델은 다음으로 폴백.
+ *  flash-lite가 기본: 품질은 Flash보다 약간 낮지만 응답이 일정하게 빠름(~1.5초).
+ *  품질 우선으로 되돌리려면 Vercel env에 GEMINI_MODEL=gemini-3.8-flash 설정. */
 const MODEL_CHAIN = [
   process.env.GEMINI_MODEL,
+  'gemini-flash-lite-latest',
   'gemini-3.8-flash',
   'gemini-3.7-flash',
-  'gemini-flash-lite-latest',
 ].filter((m): m is string => Boolean(m));
 
 /** source 텍스트를 나머지 두 언어로 번역한다. */

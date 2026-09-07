@@ -1,7 +1,12 @@
 import { LANGS, LANG_LABEL, type Lang } from './types.js';
 
-const GEMINI_MODEL = process.env.GEMINI_MODEL ?? 'gemini-3.8-flash';
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+/** 앞에서부터 순서대로 시도, 혼잡(503)·미지원 모델은 다음으로 폴백 */
+const MODEL_CHAIN = [
+  process.env.GEMINI_MODEL,
+  'gemini-3.8-flash',
+  'gemini-3.7-flash',
+  'gemini-flash-lite-latest',
+].filter((m): m is string => Boolean(m));
 
 /** source 텍스트를 나머지 두 언어로 번역한다. */
 export async function translate(
@@ -21,39 +26,54 @@ export async function translate(
     `Text: ${text}`,
   ].join('\n');
 
-  const res = await fetch(`${GEMINI_URL}?key=${apiKey}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json; charset=utf-8' },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: {
-        thinkingConfig: { thinkingLevel: 'LOW' },
-        responseMimeType: 'application/json',
-        responseJsonSchema: {
-          type: 'object',
-          properties: Object.fromEntries(targets.map((t) => [t, { type: 'string' }])),
-          required: targets,
-        },
+  const body = JSON.stringify({
+    contents: [{ parts: [{ text: prompt }] }],
+    generationConfig: {
+      thinkingConfig: { thinkingLevel: 'LOW' },
+      responseMimeType: 'application/json',
+      responseJsonSchema: {
+        type: 'object',
+        properties: Object.fromEntries(targets.map((t) => [t, { type: 'string' }])),
+        required: targets,
       },
-    }),
+    },
   });
 
-  if (!res.ok) {
-    const body = await res.text();
-    throw new Error(`Gemini API error ${res.status}: ${body.slice(0, 500)}`);
+  let lastError = '';
+  for (const model of MODEL_CHAIN) {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json; charset=utf-8' },
+        body,
+      },
+    );
+
+    if (!res.ok) {
+      lastError = `${model} → ${res.status}: ${(await res.text()).slice(0, 300)}`;
+      // 혼잡(503)·한도 초과(429)·미지원(404)이면 다음 모델로 폴백
+      if ([503, 429, 404].includes(res.status)) {
+        console.warn(`falling back from ${model} (${res.status})`);
+        continue;
+      }
+      throw new Error(`Gemini API error: ${lastError}`);
+    }
+
+    const data = (await res.json()) as {
+      candidates?: { content?: { parts?: { text?: string }[] } }[];
+    };
+    const raw = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!raw) throw new Error(`Gemini API returned no text (${model})`);
+
+    const parsed = JSON.parse(raw) as Record<string, string>;
+    const translations: Partial<Record<Lang, string>> = {};
+    for (const t of targets) {
+      if (typeof parsed[t] !== 'string') throw new Error(`missing translation for "${t}"`);
+      translations[t] = parsed[t];
+    }
+    return translations;
   }
 
-  const data = (await res.json()) as {
-    candidates?: { content?: { parts?: { text?: string }[] } }[];
-  };
-  const raw = data.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!raw) throw new Error('Gemini API returned no text');
-
-  const parsed = JSON.parse(raw) as Record<string, string>;
-  const translations: Partial<Record<Lang, string>> = {};
-  for (const t of targets) {
-    if (typeof parsed[t] !== 'string') throw new Error(`missing translation for "${t}"`);
-    translations[t] = parsed[t];
-  }
-  return translations;
+  throw new Error(`all Gemini models unavailable; last: ${lastError}`);
 }

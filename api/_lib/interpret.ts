@@ -1,5 +1,24 @@
 import { LANGS, LANG_LABEL, type ASRResult, type Lang } from './types.js';
-import { modelChain } from './translate.js';
+import { modelChain, translate } from './translate.js';
+
+/** 번역 결과가 깨졌는지 판별.
+ *  - 한국어: 자음(ㄱ-ㅎ)/모음(ㅏ-ㅣ) 자모만으로 구성 (정상 한글 음절 가-힣 없음)
+ *  - 공통: 문자·숫자 비율이 너무 낮은 경우 (기호/구두점만) */
+function isBroken(text: string): boolean {
+  const trimmed = text.trim();
+  if (trimmed.length === 0) return false;
+
+  // 한글 자모(ㄱ-ㅎ ㅏ-ㅣ)만 있고 완성형 음절(가-힣)이 없으면 깨진 것
+  const hasKoreanJamo = /[\u3131-\u3163]/.test(trimmed);
+  const hasKoreanSyllable = /[\uAC00-\uD7A3]/.test(trimmed);
+  if (hasKoreanJamo && !hasKoreanSyllable) return true;
+
+  // 알파벳·한글·가나·한자 등 실제 문자가 전체의 20% 미만이면 깨진 것
+  const letterChars = trimmed.replace(/[\s\p{P}\p{S}\p{N}]/gu, '');
+  if (trimmed.length >= 5 && letterChars.length / trimmed.length < 0.2) return true;
+
+  return false;
+}
 
 /** 명세 §5 ASR 어댑터 인터페이스.
  *  현재는 경로 A(Gemini 멀티모달 단일 호출)라 별도 구현체가 없지만,
@@ -38,6 +57,7 @@ export async function interpret(
     'The audio may be a fragment cut mid-sentence — if so, transcribe the fragment as-is without completing it into a full sentence.',
     'If a word is unclear, transcribe your best guess of the actual sound. Do not invent plausible-sounding replacements.',
     'If the audio contains no discernible speech, return an empty transcription with confidence 0.',
+    'Translations must be proper, natural sentences in each target language. Never output isolated consonants, symbols, or phonetic fragments as translations.',
   ].join('\n');
 
   const body = JSON.stringify({
@@ -121,6 +141,24 @@ export async function interpret(
         throw new Error(`missing translation for "${LANG_LABEL[l]}"`);
       }
       translations[l] = parsed[l] as string;
+    }
+
+    // 깨진 번역 감지 → 번역 API로 재번역
+    if (text.trim().length > 0) {
+      const brokenLangs = Object.entries(translations)
+        .filter(([, t]) => isBroken(t))
+        .map(([l]) => l as Lang);
+      if (brokenLangs.length > 0) {
+        try {
+          console.warn(`broken translation detected for [${brokenLangs}], retranslating…`);
+          const fixed = await translate(text, lang, quality);
+          for (const l of brokenLangs) {
+            if (fixed[l] && !isBroken(fixed[l]!)) translations[l] = fixed[l]!;
+          }
+        } catch {
+          // 재번역 실패해도 원래 결과는 그대로 반환
+        }
+      }
     }
 
     return { asr: { lang, text, confidence }, translations };

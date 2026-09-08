@@ -27,13 +27,13 @@ function App() {
 
       {/* 뒤로가기 */}
       {page !== 'home' && (
-        <div className="shrink-0 bg-[#0f1626] px-4 py-2">
+        <div className="shrink-0 bg-[#0f1626] px-3 py-2">
           <button
             type="button"
             onClick={() => setPage('home')}
-            className="flex items-center gap-1 text-sm text-slate-400 active:text-slate-200"
+            className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-base text-slate-400 active:bg-white/10 active:text-slate-200"
           >
-            <span className="text-base leading-none">&larr;</span>
+            <span className="text-xl leading-none">&larr;</span>
             홈
           </button>
         </div>

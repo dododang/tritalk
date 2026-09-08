@@ -85,9 +85,9 @@ function SessionList({ onSelect }: { onSelect: (s: SessionRecord) => void }) {
             onClick={() => {
               if (window.confirm('이 대화 기록을 삭제할까요?')) void deleteSession(session.id)
             }}
-            className="px-3 text-gray-600 transition-colors active:text-red-400"
+            className="my-3 mr-3 shrink-0 self-center rounded-lg bg-red-500/10 px-3 py-1.5 text-xs font-medium text-red-400 transition-colors active:bg-red-500/25"
           >
-            🗑
+            삭제
           </button>
         </div>
       ))}
@@ -132,9 +132,9 @@ function SessionDetail({ session, onBack }: { session: SessionRecord; onBack: ()
               void deleteSession(session.id).then(onBack)
             }
           }}
-          className="px-3 py-1.5 text-gray-600 transition-colors active:text-red-400"
+          className="shrink-0 rounded-lg bg-red-500/10 px-3 py-1.5 text-xs font-medium text-red-400 transition-colors active:bg-red-500/25"
         >
-          🗑
+          삭제
         </button>
       </div>
       <div className="flex-1 overflow-y-auto p-4">
@@ -150,9 +150,9 @@ function SessionDetail({ session, onBack }: { session: SessionRecord; onBack: ()
                 onClick={() => {
                   if (window.confirm('이 발화를 삭제할까요?')) void db.utterances.delete(u.id)
                 }}
-                className="absolute top-2 right-2 rounded-lg px-2 py-1 text-xs text-gray-600 transition-colors active:text-red-400"
+                className="absolute top-2 right-2 rounded-lg bg-red-500/10 px-2.5 py-1 text-xs font-medium text-red-400 transition-colors active:bg-red-500/25"
               >
-                ✕
+                삭제
               </button>
             </div>
           ))}

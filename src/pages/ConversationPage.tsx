@@ -3,7 +3,7 @@ import MicButton from '../components/MicButton'
 import UtteranceBubble, { type UtteranceItem } from '../components/UtteranceBubble'
 import { useVoiceCapture } from '../hooks/useVoiceCapture'
 import { requestInterpretation } from '../lib/api'
-import { durationSec, encodeWav } from '../lib/audio'
+import { durationSec, encodeWav, normalize } from '../lib/audio'
 import db, { pruneEmptySessions } from '../lib/db'
 
 const STATUS_LABEL: Record<string, string> = {
@@ -33,7 +33,8 @@ export default function ConversationPage() {
       try {
         // 번역 탭의 "고급" 토글 설정 공유 — on이면 전사 정확도 높은 Flash 우선
         const quality = localStorage.getItem('tritalk.quality') === '1'
-        const { asr, translations } = await requestInterpretation(encodeWav(audio), quality)
+        // 멀리서 말해 작게 녹음된 발화도 전사되도록 증폭 후 전송
+        const { asr, translations } = await requestInterpretation(encodeWav(normalize(audio)), quality)
         setItems((prev) =>
           asr.text.trim().length === 0
             ? prev.filter((it) => it.seq !== seq) // 말소리 없음 → 버블 제거

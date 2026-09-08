@@ -44,9 +44,9 @@ export function useVoiceCapture(opts: {
         model: 'v5',
         baseAssetPath: '/vad/',
         onnxWASMBasePath: '/vad/',
-        // 오탐 줄이기: 명확한 음성만, 짧은 잡음 무시, 문장 중 짧은 쉼은 이어붙임
-        positiveSpeechThreshold: 0.8,
-        negativeSpeechThreshold: 0.65,
+        // 원거리·작은 목소리도 잡도록 문턱 완화 (0.8은 멀리서 말하면 발화 인식 안 됨)
+        positiveSpeechThreshold: 0.6,
+        negativeSpeechThreshold: 0.45,
         minSpeechMs: 250, // 이보다 짧으면 잡음으로 간주 (misfire)
         redemptionMs: 800, // 이만큼 무음이어야 발화 종료 — 문장 중 쉼에 끊기지 않게 (명세 권장 ~0.8초)
         preSpeechPadMs: 500, // 발화 시작 직전 오디오 포함 (첫 음절 잘림 방지)

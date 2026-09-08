@@ -41,6 +41,28 @@ export function encodeWav(
   return new Blob([buffer], { type: 'audio/wav' })
 }
 
+/**
+ * 조용한(멀리서 말한) 발화 증폭 — 피크 정규화.
+ * maxGain 제한으로 잡음뿐인 오디오의 과증폭을 방지한다.
+ */
+export function normalize(
+  samples: Float32Array,
+  targetPeak = 0.95,
+  maxGain = 10,
+): Float32Array {
+  let peak = 0
+  for (let i = 0; i < samples.length; i++) {
+    const a = Math.abs(samples[i])
+    if (a > peak) peak = a
+  }
+  if (peak === 0) return samples
+  const gain = Math.min(targetPeak / peak, maxGain)
+  if (gain <= 1) return samples // 이미 충분히 큼
+  const out = new Float32Array(samples.length)
+  for (let i = 0; i < samples.length; i++) out[i] = samples[i] * gain
+  return out
+}
+
 /** 선형 보간 다운샘플 */
 export function downsample(
   samples: Float32Array,

@@ -160,7 +160,7 @@ export default function ConversationPage() {
       <div ref={listRef} className="flex-1 overflow-y-auto p-4">
         {items.length === 0 ? (
           <div className="flex h-full items-center justify-center">
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-slate-600">
               발화가 끝날 때마다 자동으로 번역 버블이 올라옵니다
             </p>
           </div>
@@ -178,7 +178,7 @@ export default function ConversationPage() {
         {state.kind === 'error' ? (
           <p className="px-4 text-center text-sm text-red-400">{state.message}</p>
         ) : (
-          <p className="text-sm text-gray-500">{STATUS_LABEL[state.kind]}</p>
+          <p className="text-sm text-slate-500">{STATUS_LABEL[state.kind]}</p>
         )}
         <MicButton state={state} onStart={handleStart} onStop={stop} />
       </div>

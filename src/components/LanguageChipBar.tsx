@@ -35,7 +35,7 @@ export default function LanguageChipBar({
             type="button"
             onClick={() => toggle(lang)}
             className={`rounded-full px-3.5 py-1.5 text-xs font-medium transition-colors ${
-              on ? 'bg-violet-500/25 text-violet-300' : 'bg-white/5 text-gray-600'
+              on ? 'bg-sky-500/25 text-sky-300' : 'bg-white/5 text-slate-600'
             }`}
           >
             {LANG_NATIVE[lang]}

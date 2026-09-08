@@ -53,14 +53,14 @@ export default function TranslatePage() {
     <div className="mx-auto flex h-full max-w-lg flex-col gap-4 p-4">
       {/* 고급 모드 토글 */}
       <div className="flex items-center justify-end gap-2">
-        <span className="text-xs text-gray-500">고급</span>
+        <span className="text-xs text-slate-500">고급</span>
         <button
           type="button"
           role="switch"
           aria-checked={quality}
           onClick={toggleQuality}
           className={`relative h-6 w-11 rounded-full transition-colors ${
-            quality ? 'bg-violet-600' : 'bg-white/10'
+            quality ? 'bg-sky-600' : 'bg-white/10'
           }`}
         >
           <span
@@ -80,8 +80,8 @@ export default function TranslatePage() {
             onClick={() => selectSource(lang)}
             className={`flex-1 rounded-full py-2 text-sm font-medium transition-colors ${
               source === lang
-                ? 'bg-violet-600 text-white'
-                : 'bg-white/5 text-gray-400 active:bg-white/10'
+                ? 'bg-sky-600 text-white'
+                : 'bg-white/5 text-slate-400 active:bg-white/10'
             }`}
           >
             {LANG_NATIVE[lang]}
@@ -96,7 +96,7 @@ export default function TranslatePage() {
           onChange={(e) => setText(e.target.value)}
           placeholder={`${LANG_NATIVE[source]} 문장을 입력하세요`}
           rows={4}
-          className="w-full resize-none bg-transparent text-base text-gray-100 outline-none placeholder:text-gray-600"
+          className="w-full resize-none bg-transparent text-base text-slate-100 outline-none placeholder:text-slate-600"
         />
         <div className="flex items-center justify-between">
           <button
@@ -106,7 +106,7 @@ export default function TranslatePage() {
               setResults({})
               setError(null)
             }}
-            className={`px-2 py-1 text-sm text-gray-500 active:text-gray-300 ${
+            className={`px-2 py-1 text-sm text-slate-500 active:text-slate-300 ${
               text ? 'visible' : 'invisible'
             }`}
           >
@@ -116,7 +116,7 @@ export default function TranslatePage() {
             type="button"
             onClick={() => void handleTranslate()}
             disabled={!canSubmit}
-            className="rounded-full bg-violet-600 px-5 py-2 text-sm font-semibold text-white transition-opacity disabled:opacity-40"
+            className="rounded-full bg-sky-600 px-5 py-2 text-sm font-semibold text-white transition-opacity disabled:opacity-40"
           >
             {loading ? '번역 중…' : '번역'}
           </button>
@@ -161,12 +161,12 @@ function ResultCard({
   return (
     <div className="rounded-2xl bg-white/5 p-4">
       <div className="mb-1.5 flex items-center justify-between">
-        <span className="text-xs font-medium text-violet-400">{label}</span>
+        <span className="text-xs font-medium text-sky-400">{label}</span>
         {text && (
           <button
             type="button"
             onClick={() => void handleCopy()}
-            className="text-xs text-gray-500 active:text-gray-300"
+            className="text-xs text-slate-500 active:text-slate-300"
           >
             {copied ? '복사됨 ✓' : '복사'}
           </button>
@@ -175,8 +175,8 @@ function ResultCard({
       {loading ? (
         <div className="h-5 w-2/3 animate-pulse rounded bg-white/10" />
       ) : (
-        <p className="min-h-5 text-base text-gray-100">
-          {text ?? <span className="text-gray-600">—</span>}
+        <p className="min-h-5 text-base text-slate-100">
+          {text ?? <span className="text-slate-600">—</span>}
         </p>
       )}
     </div>

@@ -21,7 +21,7 @@ export default function MicButton({
       disabled={starting}
       aria-label={active ? '통역 중지' : '통역 시작'}
       className={`relative flex h-16 w-16 items-center justify-center rounded-full shadow-lg transition-colors ${
-        active ? 'bg-red-500' : 'bg-violet-600'
+        active ? 'bg-red-500' : 'bg-sky-600'
       }`}
     >
       {speaking && (

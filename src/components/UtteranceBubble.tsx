@@ -37,23 +37,23 @@ export default function UtteranceBubble({ item }: { item: UtteranceItem }) {
 
   return (
     <div className="rounded-2xl bg-white/5 p-4">
-      <p className="text-xs font-medium text-violet-400">
+      <p className="text-xs font-medium text-sky-400">
         {item.lang ? LANG_NATIVE[item.lang] : ''}
       </p>
-      <p className="mt-0.5 text-base text-gray-100">{item.text}</p>
+      <p className="mt-0.5 text-base text-slate-100">{item.text}</p>
       <div className="my-3 border-t border-white/10" />
       <div className="flex flex-col gap-2">
         {Object.entries(item.translations ?? {}).map(([lang, text]) => (
           <div key={lang} className="flex items-start justify-between gap-2">
             <div className="min-w-0">
-              <p className="text-xs text-gray-500">{LANG_NATIVE[lang as Lang]}</p>
-              <p className="text-base text-gray-200">{text}</p>
+              <p className="text-xs text-slate-500">{LANG_NATIVE[lang as Lang]}</p>
+              <p className="text-base text-slate-200">{text}</p>
             </div>
             {ttsSupported && (
               <button
                 type="button"
                 onClick={() => speak(text, lang as Lang)}
-                className="mt-0.5 shrink-0 rounded-lg bg-white/5 px-2.5 py-1 text-xs font-medium text-gray-400 transition-colors active:bg-white/15"
+                className="mt-0.5 shrink-0 rounded-lg bg-white/5 px-2.5 py-1 text-xs font-medium text-slate-400 transition-colors active:bg-white/15"
               >
                 듣기
               </button>

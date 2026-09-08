@@ -23,10 +23,10 @@ export default function PasswordGate({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="flex h-dvh flex-col items-center justify-center gap-6 bg-[#0a0a0f] p-6 text-gray-100">
+    <div className="flex h-dvh flex-col items-center justify-center gap-6 bg-[#0f1626] p-6 text-slate-100">
       <div className="text-center">
         <h1 className="text-2xl font-bold">TriTalk</h1>
-        <p className="mt-2 text-sm text-gray-500">비밀번호를 입력하세요</p>
+        <p className="mt-2 text-sm text-slate-500">비밀번호를 입력하세요</p>
       </div>
       <form
         className="flex w-full max-w-xs flex-col gap-3"
@@ -40,12 +40,12 @@ export default function PasswordGate({ children }: { children: ReactNode }) {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           autoFocus
-          className="rounded-xl bg-white/5 px-4 py-3 text-center text-base outline-none focus:ring-2 focus:ring-violet-600"
+          className="rounded-xl bg-white/5 px-4 py-3 text-center text-base outline-none focus:ring-2 focus:ring-sky-600"
         />
         <button
           type="submit"
           disabled={!input.trim()}
-          className="rounded-xl bg-violet-600 py-3 text-sm font-semibold text-white disabled:opacity-40"
+          className="rounded-xl bg-sky-600 py-3 text-sm font-semibold text-white disabled:opacity-40"
         >
           입장
         </button>

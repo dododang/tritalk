@@ -17,14 +17,14 @@ function App() {
 
   return (
     <PasswordGate>
-    <div className="flex h-dvh flex-col bg-[#0a0a0f] text-gray-100">
+    <div className="flex h-dvh flex-col bg-[#0f1626] text-slate-100">
       <main className="min-h-0 flex-1 overflow-y-auto">
         {tab === 'translate' && <TranslatePage />}
         {tab === 'conversation' && <ConversationPage />}
         {tab === 'library' && <LibraryPage />}
       </main>
 
-      <nav className="border-t border-white/10 bg-[#111118] pb-[env(safe-area-inset-bottom)]">
+      <nav className="border-t border-white/10 bg-[#131d33] pb-[env(safe-area-inset-bottom)]">
         <div className="flex">
           {TABS.map(({ id, label, icon }) => (
             <button
@@ -32,7 +32,7 @@ function App() {
               type="button"
               onClick={() => setTab(id)}
               className={`flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[11px] transition-colors ${
-                tab === id ? 'text-violet-400' : 'text-gray-500'
+                tab === id ? 'text-sky-400' : 'text-slate-500'
               }`}
             >
               <span className="text-lg leading-none">{icon}</span>

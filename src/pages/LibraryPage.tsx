@@ -52,7 +52,7 @@ function SessionList({ onSelect }: { onSelect: (s: SessionRecord) => void }) {
   if (summaries.length === 0) {
     return (
       <div className="flex h-full items-center justify-center px-8">
-        <p className="text-center text-sm text-gray-600">
+        <p className="text-center text-sm text-slate-600">
           아직 대화 기록이 없습니다.
           <br />
           대화 탭에서 통역하면 자동으로 저장됩니다.
@@ -63,7 +63,7 @@ function SessionList({ onSelect }: { onSelect: (s: SessionRecord) => void }) {
 
   return (
     <div className="flex flex-col gap-2 p-4">
-      <h1 className="px-1 pb-1 text-lg font-semibold text-gray-100">대화 기록</h1>
+      <h1 className="px-1 pb-1 text-lg font-semibold text-slate-100">대화 기록</h1>
       {summaries.map(({ session, count, preview }) => (
         <div key={session.id} className="flex items-stretch gap-1 rounded-2xl bg-white/5">
           <button
@@ -72,12 +72,12 @@ function SessionList({ onSelect }: { onSelect: (s: SessionRecord) => void }) {
             className="min-w-0 flex-1 p-4 text-left transition-colors active:bg-white/10"
           >
             <div className="flex items-baseline justify-between gap-2">
-              <p className="text-sm font-medium text-violet-400">{formatStart(session.startedAt)}</p>
-              <p className="shrink-0 text-xs text-gray-500">
+              <p className="text-sm font-medium text-sky-400">{formatStart(session.startedAt)}</p>
+              <p className="shrink-0 text-xs text-slate-500">
                 {formatDuration(session)} · {count}개
               </p>
             </div>
-            <p className="mt-1 truncate text-sm text-gray-300">{preview}</p>
+            <p className="mt-1 truncate text-sm text-slate-300">{preview}</p>
           </button>
           <button
             type="button"
@@ -113,14 +113,14 @@ function SessionDetail({ session, onBack }: { session: SessionRecord; onBack: ()
         <button
           type="button"
           onClick={onBack}
-          className="rounded-lg px-3 py-1.5 text-xl leading-none text-gray-400 active:bg-white/10"
+          className="rounded-lg px-3 py-1.5 text-xl leading-none text-slate-400 active:bg-white/10"
           aria-label="뒤로"
         >
           ‹
         </button>
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium text-gray-100">{formatStart(session.startedAt)}</p>
-          <p className="text-xs text-gray-500">
+          <p className="text-sm font-medium text-slate-100">{formatStart(session.startedAt)}</p>
+          <p className="text-xs text-slate-500">
             {formatDuration(session)} · {utterances?.length ?? 0}개 발화
           </p>
         </div>

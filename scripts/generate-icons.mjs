@@ -6,17 +6,17 @@ const svg = `
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512">
   <defs>
     <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#7c3aed"/>
+      <stop offset="0" stop-color="#38bdf8"/>
       <stop offset="1" stop-color="#2563eb"/>
     </linearGradient>
   </defs>
-  <rect width="512" height="512" fill="#0a0a0f"/>
+  <rect width="512" height="512" fill="#0f1626"/>
   <rect x="32" y="32" width="448" height="448" rx="104" fill="url(#g)"/>
   <!-- 말풍선 -->
   <path d="M136 168c0-22 18-40 40-40h160c22 0 40 18 40 40v104c0 22-18 40-40 40h-88l-56 48v-48h-16c-22 0-40-18-40-40z" fill="#ffffff"/>
   <!-- 세 언어를 뜻하는 점 3개 -->
-  <circle cx="196" cy="220" r="16" fill="#7c3aed"/>
-  <circle cx="256" cy="220" r="16" fill="#5b48f0"/>
+  <circle cx="196" cy="220" r="16" fill="#0ea5e9"/>
+  <circle cx="256" cy="220" r="16" fill="#3b82f6"/>
   <circle cx="316" cy="220" r="16" fill="#2563eb"/>
 </svg>`
 

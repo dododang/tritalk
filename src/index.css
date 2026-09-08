@@ -1,13 +1,20 @@
 @import "tailwindcss";
 
-html {
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  position: fixed;
   background-color: #0f1626;
   color-scheme: dark;
-}
-
-body {
-  margin: 0;
   -webkit-tap-highlight-color: transparent;
   -webkit-touch-callout: none;
   overscroll-behavior: none;
+}
+
+#root {
+  width: 100%;
+  height: 100%;
 }

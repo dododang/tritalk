@@ -195,9 +195,6 @@ export default function ConversationPage() {
 
   return (
     <div className="mx-auto flex h-full max-w-lg flex-col">
-      {/* 세션 언어 선택 */}
-      <LanguageChipBar value={langs} onChange={handleLangsChange} />
-
       {/* 버블 리스트 */}
       <div ref={listRef} className="flex-1 overflow-y-auto p-4">
         {items.length === 0 ? (
@@ -223,6 +220,8 @@ export default function ConversationPage() {
           <p className="text-sm text-slate-500">{STATUS_LABEL[state.kind]}</p>
         )}
         <MicButton state={state} onStart={handleStart} onStop={stop} />
+        {/* 세션 언어 선택 — 마이크 아래 */}
+        <LanguageChipBar value={langs} onChange={handleLangsChange} />
       </div>
     </div>
   )

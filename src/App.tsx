@@ -17,7 +17,7 @@ function App() {
 
   return (
     <PasswordGate>
-    <div className="fixed inset-0 flex flex-col overflow-hidden bg-[#0f1626] text-slate-100">
+    <div className="flex h-[100dvh] flex-col overflow-hidden bg-[#0f1626] text-slate-100">
       {/* 상단 바 */}
       <header className="shrink-0 border-b border-white/10 bg-[#131d33] pt-[env(safe-area-inset-top)]">
         <div className="flex h-12 items-center px-4">

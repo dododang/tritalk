@@ -4,16 +4,16 @@ import ConversationPage from './pages/ConversationPage'
 import LibraryPage from './pages/LibraryPage'
 import TranslatePage from './pages/TranslatePage'
 
-type Tab = 'translate' | 'conversation' | 'library'
+type Page = 'home' | 'translate' | 'conversation' | 'library'
 
-const TABS: { id: Tab; label: string; icon: string }[] = [
-  { id: 'translate', label: '번역', icon: '文A' },
-  { id: 'conversation', label: '대화', icon: '🎙' },
-  { id: 'library', label: '라이브러리', icon: '☰' },
+const MENUS: { id: Exclude<Page, 'home'>; label: string; icon: string; desc: string }[] = [
+  { id: 'conversation', label: '대화', icon: '🎙', desc: '실시간 음성 통역' },
+  { id: 'translate', label: '번역', icon: '文A', desc: '텍스트 번역' },
+  { id: 'library', label: '라이브러리', icon: '☰', desc: '대화 기록 보기' },
 ]
 
 function App() {
-  const [tab, setTab] = useState<Tab>('conversation')
+  const [page, setPage] = useState<Page>('home')
 
   return (
     <PasswordGate>
@@ -25,30 +25,43 @@ function App() {
         </div>
       </header>
 
-      <main className="min-h-0 flex-1 overflow-y-auto overscroll-none">
-        {tab === 'translate' && <TranslatePage />}
-        {tab === 'conversation' && <ConversationPage />}
-        {tab === 'library' && <LibraryPage />}
-      </main>
-
-      {/* 하단 바 */}
-      <nav className="shrink-0 border-t border-white/10 bg-[#131d33] pb-[env(safe-area-inset-bottom)]">
-        <div className="flex">
-          {TABS.map(({ id, label, icon }) => (
-            <button
-              key={id}
-              type="button"
-              onClick={() => setTab(id)}
-              className={`flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[11px] transition-colors ${
-                tab === id ? 'text-sky-400' : 'text-slate-500'
-              }`}
-            >
-              <span className="text-lg leading-none">{icon}</span>
-              {label}
-            </button>
-          ))}
+      {/* 뒤로가기 */}
+      {page !== 'home' && (
+        <div className="shrink-0 bg-[#0f1626] px-4 py-2">
+          <button
+            type="button"
+            onClick={() => setPage('home')}
+            className="flex items-center gap-1 text-sm text-slate-400 active:text-slate-200"
+          >
+            <span className="text-base leading-none">&larr;</span>
+            홈
+          </button>
         </div>
-      </nav>
+      )}
+
+      <main className="min-h-0 flex-1 overflow-y-auto overscroll-none">
+        {page === 'home' && (
+          <div className="mx-auto flex h-full max-w-lg flex-col items-center justify-center gap-4 p-6">
+            {MENUS.map(({ id, label, icon, desc }) => (
+              <button
+                key={id}
+                type="button"
+                onClick={() => setPage(id)}
+                className="flex w-full items-center gap-4 rounded-2xl bg-white/5 p-5 text-left transition-colors active:bg-white/10"
+              >
+                <span className="text-3xl">{icon}</span>
+                <div>
+                  <p className="text-base font-semibold text-slate-100">{label}</p>
+                  <p className="text-sm text-slate-500">{desc}</p>
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
+        {page === 'translate' && <TranslatePage />}
+        {page === 'conversation' && <ConversationPage />}
+        {page === 'library' && <LibraryPage />}
+      </main>
     </div>
     </PasswordGate>
   )

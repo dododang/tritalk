@@ -20,6 +20,7 @@ export async function interpret(
   mimeType: string,
   quality = false,
   langs: Lang[] = LANGS,
+  prevLang?: Lang,
 ): Promise<InterpretResult> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) throw new Error('GEMINI_API_KEY is not set');
@@ -92,11 +93,26 @@ export async function interpret(
     if (!raw) throw new Error(`Gemini API returned no text (${model})`);
 
     const parsed = JSON.parse(raw) as Record<string, unknown>;
-    const lang = parsed.lang as Lang;
+    let lang = parsed.lang as Lang;
     if (!langs.includes(lang)) throw new Error(`invalid detected lang "${String(parsed.lang)}"`);
 
-    const text = typeof parsed[lang] === 'string' ? (parsed[lang] as string) : '';
-    const confidence = typeof parsed.confidence === 'number' ? parsed.confidence : 0;
+    let text = typeof parsed[lang] === 'string' ? (parsed[lang] as string) : '';
+    let confidence = typeof parsed.confidence === 'number' ? parsed.confidence : 0;
+
+    // 짧은 발화("네", "Yes", "はい")는 언어 판별 신뢰도가 낮음 → 직전 발화 언어 유지 (명세 §6)
+    // 모든 세션 언어의 텍스트를 이미 받아뒀으므로 라벨만 바꾸면 됨
+    if (
+      prevLang &&
+      prevLang !== lang &&
+      langs.includes(prevLang) &&
+      text.trim().length > 0 &&
+      text.trim().length <= 3 &&
+      typeof parsed[prevLang] === 'string'
+    ) {
+      lang = prevLang;
+      text = parsed[prevLang] as string;
+      confidence = 0.5;
+    }
 
     const translations: Partial<Record<Lang, string>> = {};
     for (const l of langs) {

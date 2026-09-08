@@ -40,6 +40,8 @@ export interface InterpretRequest {
   quality?: boolean;
   /** 세션에서 쓸 언어 (2~3개). 생략 시 3개 전부. 감지·번역이 이 언어들로 제한됨 */
   langs?: Lang[];
+  /** 직전 발화의 언어 — 짧은 발화("네", "Yes")의 언어 감지 보정에 사용 (명세 §6) */
+  prevLang?: Lang;
 }
 
 /** POST /api/interpret 응답 본문 */

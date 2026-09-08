@@ -3,7 +3,7 @@ import LanguageChipBar from '../components/LanguageChipBar'
 import MicButton from '../components/MicButton'
 import UtteranceBubble, { type UtteranceItem } from '../components/UtteranceBubble'
 import { useVoiceCapture } from '../hooks/useVoiceCapture'
-import { requestInterpretation, type Lang } from '../lib/api'
+import { requestInterpretation, requestTranslation, type Lang } from '../lib/api'
 import { durationSec, encodeWav, normalize } from '../lib/audio'
 import db, { pruneEmptySessions } from '../lib/db'
 
@@ -43,6 +43,9 @@ export default function ConversationPage() {
     localStorage.setItem('tritalk.langs', JSON.stringify(next))
   }, [])
 
+  // 직전 발화 언어 — 짧은 발화("네", "Yes") 언어 감지 보정용 (명세 §6)
+  const prevLangRef = useRef<Lang | undefined>(undefined)
+
   const handleUtterance = useCallback((audio: Float32Array) => {
     // 너무 짧은 조각(0.3초 미만)은 버림
     if (durationSec(audio) < 0.3) return
@@ -61,7 +64,9 @@ export default function ConversationPage() {
           encodeWav(normalize(audio)),
           quality,
           langsRef.current,
+          prevLangRef.current,
         )
+        if (asr.text.trim().length > 0) prevLangRef.current = asr.lang
         setItems((prev) =>
           asr.text.trim().length === 0
             ? prev.filter((it) => it.seq !== seq) // 말소리 없음 → 버블 제거
@@ -75,13 +80,15 @@ export default function ConversationPage() {
         if (asr.text.trim().length > 0 && sessionPromise) {
           try {
             const sessionId = await sessionPromise
-            await db.utterances.add({
+            const dbId = await db.utterances.add({
               sessionId,
               createdAt: Date.now(),
               lang: asr.lang,
               text: asr.text,
               translations,
             })
+            // 수정 시 DB에도 반영할 수 있게 버블에 기록 id 연결
+            setItems((prev) => prev.map((it) => (it.seq === seq ? { ...it, dbId } : it)))
           } catch (err) {
             console.error('대화 기록 저장 실패', err)
           }
@@ -90,6 +97,41 @@ export default function ConversationPage() {
         const message = e instanceof Error ? e.message : '통역에 실패했습니다'
         setItems((prev) =>
           prev.map((it) => (it.seq === seq ? { seq, status: 'error' as const, error: message } : it)),
+        )
+      }
+    })()
+  }, [])
+
+  // 버블 "수정": 원문·언어를 고쳐 재번역하고, 저장된 기록에도 반영
+  const handleRetranslate = useCallback((seq: number, text: string, lang: Lang) => {
+    setItems((prev) =>
+      prev.map((it) => (it.seq === seq ? { seq, status: 'processing' as const, dbId: it.dbId } : it)),
+    )
+    void (async () => {
+      try {
+        const quality = localStorage.getItem('tritalk.quality') === '1'
+        const all = await requestTranslation(text, lang, quality)
+        // 세션 언어만 표시 (수정한 언어가 세션 밖이면 전부 표시)
+        const sessionLangs = langsRef.current
+        const translations: Partial<Record<Lang, string>> = {}
+        for (const [l, t] of Object.entries(all) as [Lang, string][]) {
+          if (!sessionLangs.includes(lang) || sessionLangs.includes(l)) translations[l] = t
+        }
+        let dbId: number | undefined
+        setItems((prev) =>
+          prev.map((it) => {
+            if (it.seq !== seq) return it
+            dbId = it.dbId
+            return { seq, status: 'done' as const, lang, text, translations, dbId: it.dbId }
+          }),
+        )
+        if (dbId !== undefined) {
+          await db.utterances.update(dbId, { lang, text, translations }).catch(() => {})
+        }
+      } catch (e) {
+        const message = e instanceof Error ? e.message : '재번역에 실패했습니다'
+        setItems((prev) =>
+          prev.map((it) => (it.seq === seq ? { ...it, status: 'error' as const, error: message } : it)),
         )
       }
     })()
@@ -167,7 +209,7 @@ export default function ConversationPage() {
         ) : (
           <div className="flex flex-col gap-3">
             {items.map((item) => (
-              <UtteranceBubble key={item.seq} item={item} />
+              <UtteranceBubble key={item.seq} item={item} onRetranslate={handleRetranslate} />
             ))}
           </div>
         )}

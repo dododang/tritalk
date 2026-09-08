@@ -45,12 +45,14 @@ export async function requestInterpretation(
   wav: Blob,
   quality: boolean,
   langs?: Lang[],
+  prevLang?: Lang,
 ): Promise<InterpretResponse> {
   const body: InterpretRequest = {
     audio: await blobToBase64(wav),
     mimeType: 'audio/wav',
     quality,
     langs,
+    prevLang,
   }
 
   const res = await fetch('/api/interpret', {

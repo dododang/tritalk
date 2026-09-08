@@ -17,7 +17,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(401).json({ error: 'unauthorized' });
   }
 
-  const { audio, mimeType, quality, langs } = (req.body ?? {}) as Partial<InterpretRequest>;
+  const { audio, mimeType, quality, langs, prevLang } = (req.body ?? {}) as Partial<InterpretRequest>;
 
   if (typeof audio !== 'string' || audio.length === 0) {
     return res.status(400).json({ error: 'audio (base64) is required' });
@@ -44,8 +44,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     sessionLangs = langs as Lang[];
   }
 
+  if (prevLang !== undefined && !LANGS.includes(prevLang)) {
+    return res.status(400).json({ error: 'prevLang must be one of ko/en/ja' });
+  }
+
   try {
-    const result = await interpret(audio, mime, quality === true, sessionLangs);
+    const result = await interpret(audio, mime, quality === true, sessionLangs, prevLang);
     const body: InterpretResponse = result;
     return res.status(200).json(body);
   } catch (e) {

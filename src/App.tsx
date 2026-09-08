@@ -18,6 +18,13 @@ function App() {
   return (
     <PasswordGate>
     <div className="flex h-dvh flex-col bg-[#0f1626] text-slate-100">
+      {/* 상단 바 */}
+      <header className="border-b border-white/10 bg-[#131d33] pt-[env(safe-area-inset-top)]">
+        <div className="flex h-11 items-center px-4">
+          <span className="text-base font-bold text-sky-400">TriTalk</span>
+        </div>
+      </header>
+
       <main className="min-h-0 flex-1 overflow-y-auto">
         {tab === 'translate' && <TranslatePage />}
         {tab === 'conversation' && <ConversationPage />}

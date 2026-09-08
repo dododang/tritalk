@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { requestTranslation, type Lang } from '../lib/api'
+import { speak, ttsSupported } from '../lib/tts'
 
 const LANG_NATIVE: Record<Lang, string> = {
   ko: '한국어',
@@ -99,19 +100,30 @@ export default function TranslatePage() {
           className="w-full resize-none bg-transparent text-base text-slate-100 outline-none placeholder:text-slate-600"
         />
         <div className="flex items-center justify-between">
-          <button
-            type="button"
-            onClick={() => {
-              setText('')
-              setResults({})
-              setError(null)
-            }}
-            className={`px-2 py-1 text-sm text-slate-500 active:text-slate-300 ${
-              text ? 'visible' : 'invisible'
-            }`}
-          >
-            지우기
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setText('')
+                setResults({})
+                setError(null)
+              }}
+              className={`px-2 py-1 text-sm text-slate-500 active:text-slate-300 ${
+                text ? 'visible' : 'invisible'
+              }`}
+            >
+              지우기
+            </button>
+            {ttsSupported && text.trim() && (
+              <button
+                type="button"
+                onClick={() => speak(text.trim(), source)}
+                className="px-2 py-1 text-sm text-slate-500 active:text-slate-300"
+              >
+                듣기
+              </button>
+            )}
+          </div>
           <button
             type="button"
             onClick={() => void handleTranslate()}
@@ -131,6 +143,7 @@ export default function TranslatePage() {
       {targets.map((lang) => (
         <ResultCard
           key={lang}
+          lang={lang}
           label={LANG_NATIVE[lang]}
           text={results[lang]}
           loading={loading}
@@ -141,10 +154,12 @@ export default function TranslatePage() {
 }
 
 function ResultCard({
+  lang,
   label,
   text,
   loading,
 }: {
+  lang: Lang
   label: string
   text: string | undefined
   loading: boolean
@@ -162,15 +177,26 @@ function ResultCard({
     <div className="rounded-2xl bg-white/5 p-4">
       <div className="mb-1.5 flex items-center justify-between">
         <span className="text-xs font-medium text-sky-400">{label}</span>
-        {text && (
-          <button
-            type="button"
-            onClick={() => void handleCopy()}
-            className="text-xs text-slate-500 active:text-slate-300"
-          >
-            {copied ? '복사됨 ✓' : '복사'}
-          </button>
-        )}
+        <div className="flex items-center gap-2">
+          {ttsSupported && text && (
+            <button
+              type="button"
+              onClick={() => speak(text, lang)}
+              className="text-xs text-slate-500 active:text-slate-300"
+            >
+              듣기
+            </button>
+          )}
+          {text && (
+            <button
+              type="button"
+              onClick={() => void handleCopy()}
+              className="text-xs text-slate-500 active:text-slate-300"
+            >
+              {copied ? '복사됨 ✓' : '복사'}
+            </button>
+          )}
+        </div>
       </div>
       {loading ? (
         <div className="h-5 w-2/3 animate-pulse rounded bg-white/10" />

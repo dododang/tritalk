@@ -139,9 +139,21 @@ export default function ConversationPage() {
 
   const { state, start, stop } = useVoiceCapture({ onUtterance: handleUtterance })
 
-  // 새 버블·스켈레톤 추가 시 맨 아래로 스크롤
+  // 새 버블 추가 시 — 사용자가 이미 맨 아래 근처면 자동 스크롤, 위로 올려본 상태면 건드리지 않음
+  const isNearBottomRef = useRef(true)
   useEffect(() => {
-    listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: 'smooth' })
+    const el = listRef.current
+    if (!el) return
+    const onScroll = () => {
+      isNearBottomRef.current = el.scrollHeight - el.scrollTop - el.clientHeight < 80
+    }
+    el.addEventListener('scroll', onScroll, { passive: true })
+    return () => el.removeEventListener('scroll', onScroll)
+  }, [])
+  useEffect(() => {
+    if (isNearBottomRef.current) {
+      listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: 'smooth' })
+    }
   }, [items])
 
   // 진입 시 빈 세션 정리

@@ -107,6 +107,34 @@ export default function ConversationPage() {
     void pruneEmptySessions().catch(() => {})
   }, [])
 
+  // 통역 중 화면 꺼짐 방지 (Wake Lock — iOS 16.4+ PWA 지원)
+  const capturing =
+    state.kind === 'starting' || state.kind === 'listening' || state.kind === 'speaking'
+  useEffect(() => {
+    if (!capturing || !('wakeLock' in navigator)) return
+    let lock: WakeLockSentinel | null = null
+    let cancelled = false
+    const acquire = async () => {
+      try {
+        lock = await navigator.wakeLock.request('screen')
+        if (cancelled) await lock.release()
+      } catch {
+        // 저전력 모드 등에서 거부될 수 있음 — 무시
+      }
+    }
+    void acquire()
+    // 화면 복귀 시 재획득 (백그라운드 갔다 오면 락이 자동 해제됨)
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') void acquire()
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => {
+      cancelled = true
+      document.removeEventListener('visibilitychange', onVisible)
+      void lock?.release().catch(() => {})
+    }
+  }, [capturing])
+
   // 마이크가 멈추면(정지·에러·백그라운드 전환) 세션 종료 처리
   useEffect(() => {
     if ((state.kind === 'idle' || state.kind === 'error') && sessionRef.current) {

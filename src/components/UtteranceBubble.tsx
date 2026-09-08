@@ -1,4 +1,5 @@
 import type { Lang } from '../lib/api'
+import { speak, ttsSupported } from '../lib/tts'
 
 const LANG_NATIVE: Record<Lang, string> = {
   ko: '한국어',
@@ -43,9 +44,20 @@ export default function UtteranceBubble({ item }: { item: UtteranceItem }) {
       <div className="my-3 border-t border-white/10" />
       <div className="flex flex-col gap-2">
         {Object.entries(item.translations ?? {}).map(([lang, text]) => (
-          <div key={lang}>
-            <p className="text-xs text-gray-500">{LANG_NATIVE[lang as Lang]}</p>
-            <p className="text-base text-gray-200">{text}</p>
+          <div key={lang} className="flex items-start justify-between gap-2">
+            <div className="min-w-0">
+              <p className="text-xs text-gray-500">{LANG_NATIVE[lang as Lang]}</p>
+              <p className="text-base text-gray-200">{text}</p>
+            </div>
+            {ttsSupported && (
+              <button
+                type="button"
+                onClick={() => speak(text, lang as Lang)}
+                className="mt-0.5 shrink-0 rounded-lg bg-white/5 px-2.5 py-1 text-xs font-medium text-gray-400 transition-colors active:bg-white/15"
+              >
+                듣기
+              </button>
+            )}
           </div>
         ))}
       </div>

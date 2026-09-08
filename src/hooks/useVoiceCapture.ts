@@ -81,6 +81,18 @@ export function useVoiceCapture(opts: {
     }
   }, [])
 
+  // TTS 재생 중에는 VAD 일시정지 — 스피커로 나오는 번역 음성을 발화로 인식하지 않게
+  useEffect(() => {
+    const pause = () => vadRef.current?.pause()
+    const resume = () => vadRef.current?.start()
+    window.addEventListener('tritalk:tts-start', pause)
+    window.addEventListener('tritalk:tts-end', resume)
+    return () => {
+      window.removeEventListener('tritalk:tts-start', pause)
+      window.removeEventListener('tritalk:tts-end', resume)
+    }
+  }, [])
+
   // 백그라운드 전환 시 캡처 중단 (iOS에서 오디오 세션이 어차피 끊김)
   useEffect(() => {
     function handleVisibility() {

@@ -4,6 +4,7 @@ import UtteranceBubble, { type UtteranceItem } from '../components/UtteranceBubb
 import { useVoiceCapture } from '../hooks/useVoiceCapture'
 import { requestInterpretation } from '../lib/api'
 import { durationSec, encodeWav } from '../lib/audio'
+import db, { pruneEmptySessions } from '../lib/db'
 
 const STATUS_LABEL: Record<string, string> = {
   idle: '버튼을 눌러 통역을 시작하세요',
@@ -16,11 +17,14 @@ export default function ConversationPage() {
   const [items, setItems] = useState<UtteranceItem[]>([])
   const seqRef = useRef(0)
   const listRef = useRef<HTMLDivElement>(null)
+  // 현재 세션 id (마이크 시작 시 생성). Promise인 이유: 생성 완료 전에 발화가 끝날 수 있음
+  const sessionRef = useRef<Promise<number> | null>(null)
 
   const handleUtterance = useCallback((audio: Float32Array) => {
     // 너무 짧은 조각(0.3초 미만)은 버림
     if (durationSec(audio) < 0.3) return
 
+    const sessionPromise = sessionRef.current // 캡처 시점의 세션 (정지 후 완료돼도 원래 세션에 저장)
     const seq = seqRef.current++
     setItems((prev) => [...prev, { seq, status: 'processing' }])
 
@@ -39,6 +43,21 @@ export default function ConversationPage() {
                   : it,
               ),
         )
+        // 대화 기록 저장 (실패해도 통역 UI에는 영향 없음)
+        if (asr.text.trim().length > 0 && sessionPromise) {
+          try {
+            const sessionId = await sessionPromise
+            await db.utterances.add({
+              sessionId,
+              createdAt: Date.now(),
+              lang: asr.lang,
+              text: asr.text,
+              translations,
+            })
+          } catch (err) {
+            console.error('대화 기록 저장 실패', err)
+          }
+        }
       } catch (e) {
         const message = e instanceof Error ? e.message : '통역에 실패했습니다'
         setItems((prev) =>
@@ -54,6 +73,27 @@ export default function ConversationPage() {
   useEffect(() => {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: 'smooth' })
   }, [items])
+
+  // 진입 시 빈 세션 정리
+  useEffect(() => {
+    void pruneEmptySessions().catch(() => {})
+  }, [])
+
+  // 마이크가 멈추면(정지·에러·백그라운드 전환) 세션 종료 처리
+  useEffect(() => {
+    if ((state.kind === 'idle' || state.kind === 'error') && sessionRef.current) {
+      const sessionPromise = sessionRef.current
+      sessionRef.current = null
+      void sessionPromise
+        .then((id) => db.sessions.update(id, { endedAt: Date.now() }))
+        .catch(() => {})
+    }
+  }, [state.kind])
+
+  const handleStart = useCallback(() => {
+    sessionRef.current = db.sessions.add({ startedAt: Date.now(), endedAt: null })
+    void start()
+  }, [start])
 
   return (
     <div className="mx-auto flex h-full max-w-lg flex-col">
@@ -81,7 +121,7 @@ export default function ConversationPage() {
         ) : (
           <p className="text-sm text-gray-500">{STATUS_LABEL[state.kind]}</p>
         )}
-        <MicButton state={state} onStart={() => void start()} onStop={stop} />
+        <MicButton state={state} onStart={handleStart} onStop={stop} />
       </div>
     </div>
   )

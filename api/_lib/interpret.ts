@@ -13,20 +13,25 @@ export interface InterpretResult {
   translations: Partial<Record<Lang, string>>;
 }
 
-/** 오디오 → 전사 + 언어 감지 + 나머지 두 언어 번역 (Gemini 멀티모달 단일 호출) */
+/** 오디오 → 전사 + 언어 감지 + 나머지 언어 번역 (Gemini 멀티모달 단일 호출).
+ *  langs로 세션 언어(2~3개)를 제한하면 감지·번역이 그 안에서만 이뤄진다. */
 export async function interpret(
   audioBase64: string,
   mimeType: string,
   quality = false,
+  langs: Lang[] = LANGS,
 ): Promise<InterpretResult> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) throw new Error('GEMINI_API_KEY is not set');
 
+  const labels = langs.map((l) => LANG_LABEL[l]);
+  const langDesc = langs.map((l) => `${l} (${LANG_LABEL[l]})`).join(', ');
+
   const prompt = [
-    'You are a professional interpreter. The audio contains speech in Korean, English, or Japanese.',
+    `You are a professional interpreter. The audio contains speech in ${labels.join(' or ')}.`,
     '1. Transcribe exactly what was said, in the original language.',
-    '2. Detect the language: ko (Korean), en (English), or ja (Japanese). Give a confidence between 0 and 1.',
-    '3. Provide the text in all three languages: for the detected language, repeat the transcription; for the other two, translate it.',
+    `2. Detect the language — it is one of: ${langDesc}. Give a confidence between 0 and 1.`,
+    `3. Provide the text in ${labels.length === 2 ? 'both languages' : 'all three languages'}: for the detected language, repeat the transcription; for the other${labels.length === 2 ? '' : 's'}, translate it.`,
     'Preserve the tone, politeness level, and nuance. Output natural, everyday phrasing a native speaker would use.',
     'CRITICAL: Transcribe ONLY what is actually audible. Never add greetings, sentence openings, or endings that were not spoken.',
     'The audio may be a fragment cut mid-sentence — if so, transcribe the fragment as-is without completing it into a full sentence.',
@@ -49,12 +54,12 @@ export async function interpret(
       responseJsonSchema: {
         type: 'object',
         properties: {
-          lang: { type: 'string', enum: LANGS },
+          lang: { type: 'string', enum: langs },
           confidence: { type: 'number' },
-          ...Object.fromEntries(LANGS.map((l) => [l, { type: 'string' }])),
+          ...Object.fromEntries(langs.map((l) => [l, { type: 'string' }])),
         },
-        required: ['lang', 'confidence', ...LANGS],
-        propertyOrdering: ['lang', 'confidence', ...LANGS],
+        required: ['lang', 'confidence', ...langs],
+        propertyOrdering: ['lang', 'confidence', ...langs],
       },
     },
   });
@@ -88,13 +93,13 @@ export async function interpret(
 
     const parsed = JSON.parse(raw) as Record<string, unknown>;
     const lang = parsed.lang as Lang;
-    if (!LANGS.includes(lang)) throw new Error(`invalid detected lang "${String(parsed.lang)}"`);
+    if (!langs.includes(lang)) throw new Error(`invalid detected lang "${String(parsed.lang)}"`);
 
     const text = typeof parsed[lang] === 'string' ? (parsed[lang] as string) : '';
     const confidence = typeof parsed.confidence === 'number' ? parsed.confidence : 0;
 
     const translations: Partial<Record<Lang, string>> = {};
-    for (const l of LANGS) {
+    for (const l of langs) {
       if (l === lang) continue;
       if (typeof parsed[l] !== 'string') {
         throw new Error(`missing translation for "${LANG_LABEL[l]}"`);

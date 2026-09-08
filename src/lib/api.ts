@@ -40,15 +40,17 @@ export async function requestTranslation(
   return data.translations
 }
 
-/** 발화 WAV → 전사 + 언어감지 + 2개 언어 번역 */
+/** 발화 WAV → 전사 + 언어감지 + 나머지 언어 번역. langs로 세션 언어(2~3개) 제한 */
 export async function requestInterpretation(
   wav: Blob,
   quality: boolean,
+  langs?: Lang[],
 ): Promise<InterpretResponse> {
   const body: InterpretRequest = {
     audio: await blobToBase64(wav),
     mimeType: 'audio/wav',
     quality,
+    langs,
   }
 
   const res = await fetch('/api/interpret', {

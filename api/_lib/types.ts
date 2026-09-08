@@ -38,6 +38,8 @@ export interface InterpretRequest {
   mimeType?: string;
   /** true면 고급(Flash) 모델 우선 */
   quality?: boolean;
+  /** 세션에서 쓸 언어 (2~3개). 생략 시 3개 전부. 감지·번역이 이 언어들로 제한됨 */
+  langs?: Lang[];
 }
 
 /** POST /api/interpret 응답 본문 */

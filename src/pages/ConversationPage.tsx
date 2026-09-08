@@ -1,10 +1,24 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import LanguageChipBar from '../components/LanguageChipBar'
 import MicButton from '../components/MicButton'
 import UtteranceBubble, { type UtteranceItem } from '../components/UtteranceBubble'
 import { useVoiceCapture } from '../hooks/useVoiceCapture'
-import { requestInterpretation } from '../lib/api'
+import { requestInterpretation, type Lang } from '../lib/api'
 import { durationSec, encodeWav, normalize } from '../lib/audio'
 import db, { pruneEmptySessions } from '../lib/db'
+
+function loadLangs(): Lang[] {
+  try {
+    const raw = localStorage.getItem('tritalk.langs')
+    if (raw) {
+      const arr = JSON.parse(raw) as Lang[]
+      if (Array.isArray(arr) && arr.length >= 2) return arr
+    }
+  } catch {
+    // 무시하고 기본값
+  }
+  return ['ko', 'en', 'ja']
+}
 
 const STATUS_LABEL: Record<string, string> = {
   idle: '버튼을 눌러 통역을 시작하세요',
@@ -20,6 +34,15 @@ export default function ConversationPage() {
   // 현재 세션 id (마이크 시작 시 생성). Promise인 이유: 생성 완료 전에 발화가 끝날 수 있음
   const sessionRef = useRef<Promise<number> | null>(null)
 
+  // 세션 언어 (2~3개). 선택된 언어끼리만 인식·상호 번역
+  const [langs, setLangs] = useState<Lang[]>(loadLangs)
+  const langsRef = useRef(langs)
+  langsRef.current = langs
+  const handleLangsChange = useCallback((next: Lang[]) => {
+    setLangs(next)
+    localStorage.setItem('tritalk.langs', JSON.stringify(next))
+  }, [])
+
   const handleUtterance = useCallback((audio: Float32Array) => {
     // 너무 짧은 조각(0.3초 미만)은 버림
     if (durationSec(audio) < 0.3) return
@@ -34,7 +57,11 @@ export default function ConversationPage() {
         // 번역 탭의 "고급" 토글 설정 공유 — on이면 전사 정확도 높은 Flash 우선
         const quality = localStorage.getItem('tritalk.quality') === '1'
         // 멀리서 말해 작게 녹음된 발화도 전사되도록 증폭 후 전송
-        const { asr, translations } = await requestInterpretation(encodeWav(normalize(audio)), quality)
+        const { asr, translations } = await requestInterpretation(
+          encodeWav(normalize(audio)),
+          quality,
+          langsRef.current,
+        )
         setItems((prev) =>
           asr.text.trim().length === 0
             ? prev.filter((it) => it.seq !== seq) // 말소리 없음 → 버블 제거
@@ -98,6 +125,9 @@ export default function ConversationPage() {
 
   return (
     <div className="mx-auto flex h-full max-w-lg flex-col">
+      {/* 세션 언어 선택 */}
+      <LanguageChipBar value={langs} onChange={handleLangsChange} />
+
       {/* 버블 리스트 */}
       <div ref={listRef} className="flex-1 overflow-y-auto p-4">
         {items.length === 0 ? (
